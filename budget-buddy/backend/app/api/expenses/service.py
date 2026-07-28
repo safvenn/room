@@ -128,8 +128,7 @@ class ExpenseService:
         if data.category is not None:
             updates["category"] = data.category
         if data.expense_date is not None:
-            from datetime import datetime as _dt
-            updates["expense_date"] = _dt.combine(data.expense_date, _dt.min.time())
+            updates["expense_date"] = data.expense_date.isoformat()
 
         updated = await self.repo.update(expense_id, updates)
         logger.info(f"Expense updated: {expense_id} by {current_user.email}")

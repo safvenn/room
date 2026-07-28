@@ -1,5 +1,5 @@
 import uuid
-from datetime import datetime, date, timezone
+from datetime import datetime, timezone
 from typing import Optional
 from app.models.expense import Expense, ExpenseSplit
 
@@ -10,10 +10,9 @@ class ExpenseRepository:
 
     async def create(self, **kwargs) -> Expense:
         expense = Expense(**kwargs)
-        # Convert date to datetime if necessary for MongoDB serialization
-        exp_date = expense.expense_date
-        if isinstance(exp_date, date) and not isinstance(exp_date, datetime):
-            exp_date = datetime.combine(exp_date, datetime.min.time())
+        # Store expense_date as ISO string (YYYY-MM-DD) to avoid
+        # timezone conversion issues (midnight UTC = prior day in UTC+5:30)
+        exp_date_str = expense.expense_date.isoformat() if hasattr(expense.expense_date, 'isoformat') else str(expense.expense_date)
         await self.collection.insert_one({
             "_id": expense.id,
             "title": expense.title,
@@ -24,7 +23,7 @@ class ExpenseRepository:
             "category": expense.category,
             "split_type": expense.split_type,
             "group_id": expense.group_id,
-            "expense_date": exp_date,
+            "expense_date": exp_date_str,
             "created_at": expense.created_at,
             "updated_at": expense.updated_at,
             "splits": []

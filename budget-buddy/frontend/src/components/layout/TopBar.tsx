@@ -1,8 +1,13 @@
 import { useNavigate } from 'react-router-dom';
 import { useAuthStore } from '../../store/auth';
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { notificationsAPI } from '../../api/services';
 import type { Notification } from '../../types';
+
+// Module-level notification cache: refresh at most every 2 minutes
+let _notifCache: Notification[] = [];
+let _notifFetchedAt = 0;
+const NOTIF_TTL_MS = 2 * 60 * 1000;
 
 interface TopBarProps {
   title?: string;
@@ -14,13 +19,24 @@ interface TopBarProps {
 export default function TopBar({ title = 'Budget Buddy', showBack, showNotifications = true, right }: TopBarProps) {
   const navigate = useNavigate();
   const { user } = useAuthStore();
-  const [notifications, setNotifications] = useState<Notification[]>([]);
+  const [notifications, setNotifications] = useState<Notification[]>(_notifCache);
   const [showPanel, setShowPanel] = useState(false);
+  const fetchedRef = useRef(false);
 
   useEffect(() => {
-    if (showNotifications) {
-      notificationsAPI.list().then(r => setNotifications(r.data.notifications)).catch(() => {});
+    if (!showNotifications) return;
+    const now = Date.now();
+    if (fetchedRef.current || now - _notifFetchedAt < NOTIF_TTL_MS) {
+      // Already fresh — use cached value
+      setNotifications(_notifCache);
+      return;
     }
+    fetchedRef.current = true;
+    notificationsAPI.list().then(r => {
+      _notifCache = r.data.notifications;
+      _notifFetchedAt = Date.now();
+      setNotifications(_notifCache);
+    }).catch(() => {});
   }, [showNotifications]);
 
   const unread = notifications.filter(n => !n.is_read).length;

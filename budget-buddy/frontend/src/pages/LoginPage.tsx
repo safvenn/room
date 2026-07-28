@@ -16,12 +16,10 @@ export default function LoginPage() {
     try {
       const loginRes = await authAPI.login(form);
       const { access_token, refresh_token } = loginRes.data;
-      localStorage.setItem('access_token', access_token);
-      localStorage.setItem('refresh_token', refresh_token);
       const meRes = await authAPI.me();
       setAuth(meRes.data, access_token, refresh_token);
       toast.success('Welcome back!');
-      navigate('/dashboard');
+      navigate('/add-expense');
     } catch (err: any) {
       toast.error(err.response?.data?.detail || 'Invalid credentials');
     } finally {

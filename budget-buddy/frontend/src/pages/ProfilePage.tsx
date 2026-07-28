@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, Navigate } from 'react-router-dom';
 import Layout from '../components/layout/Layout';
 import { usersAPI } from '../api/services';
 import { useAuthStore } from '../store/auth';
@@ -41,7 +41,7 @@ export default function ProfilePage() {
     navigate('/login');
   };
 
-  if (!user) return null;
+  if (!user) return <Navigate to="/login" replace />;
 
   return (
     <Layout>

@@ -1,0 +1,20 @@
+{
+  "name": "Budget Buddy",
+  "short_name": "BudgetBuddy",
+  "description": "Track and split expenses with friends",
+  "start_url": "/add-expense",
+  "display": "standalone",
+  "background_color": "#f8f9fa",
+  "theme_color": "#2563eb",
+  "orientation": "portrait-primary",
+  "icons": [
+    {
+      "src": "/favicon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
+    }
+  ],
+  "categories": ["finance", "utilities"],
+  "lang": "en-IN"
+}

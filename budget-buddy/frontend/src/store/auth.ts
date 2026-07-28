@@ -1,47 +1,67 @@
+import { useSyncExternalStore } from 'react';
 import type { User } from '../types';
 
-let _user: User | null = null;
-const _listeners: Set<() => void> = new Set();
+// ─── Module-level state ────────────────────────────────────────────────────
+interface AuthState {
+  user: User | null;
+  accessToken: string | null;
+  refreshToken: string | null;
+}
 
-try {
-  const stored = localStorage.getItem('user');
-  if (stored) _user = JSON.parse(stored);
-} catch {}
+const _listeners = new Set<() => void>();
 
+function _notify() {
+  _listeners.forEach((l) => l());
+}
+
+function _read(): AuthState {
+  try {
+    const stored = localStorage.getItem('user');
+    return {
+      user: stored ? (JSON.parse(stored) as User) : null,
+      accessToken: localStorage.getItem('access_token'),
+      refreshToken: localStorage.getItem('refresh_token'),
+    };
+  } catch {
+    return { user: null, accessToken: null, refreshToken: null };
+  }
+}
+
+function _subscribe(listener: () => void) {
+  _listeners.add(listener);
+  return () => _listeners.delete(listener);
+}
+
+// ─── Public API ────────────────────────────────────────────────────────────
+
+/** React hook — reactive, re-renders on every auth change. */
 export const useAuthStore = () => {
-  const token = localStorage.getItem('access_token');
-  const user = _user;
+  const state = useSyncExternalStore(_subscribe, _read, _read);
   return {
-    user,
-    accessToken: token,
-    isAuthenticated: !!token && !!user,
+    user: state.user,
+    accessToken: state.accessToken,
+    isAuthenticated: !!state.accessToken && !!state.user,
     setAuth: (user: User, accessToken: string, refreshToken: string) => {
-      _user = user;
       localStorage.setItem('access_token', accessToken);
       localStorage.setItem('refresh_token', refreshToken);
       localStorage.setItem('user', JSON.stringify(user));
-      _listeners.forEach(l => l());
+      _notify();
     },
     setUser: (user: User) => {
-      _user = user;
       localStorage.setItem('user', JSON.stringify(user));
-      _listeners.forEach(l => l());
+      _notify();
     },
     logout: () => {
-      _user = null;
-      localStorage.clear();
-      _listeners.forEach(l => l());
+      localStorage.removeItem('access_token');
+      localStorage.removeItem('refresh_token');
+      localStorage.removeItem('user');
+      _notify();
     },
   };
 };
 
-export const subscribe = (listener: () => void) => {
-  _listeners.add(listener);
-  return () => _listeners.delete(listener);
-};
+/** Non-hook accessor for use in interceptors / outside React. */
+export const getAuth = () => _read();
 
-export const getAuth = () => ({
-  user: _user,
-  accessToken: localStorage.getItem('access_token'),
-  isAuthenticated: !!localStorage.getItem('access_token') && !!_user,
-});
+/** Subscribe to auth changes from outside React (e.g. axios interceptors). */
+export const subscribeToAuth = (listener: () => void) => _subscribe(listener);

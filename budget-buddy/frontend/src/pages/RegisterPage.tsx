@@ -26,7 +26,7 @@ export default function RegisterPage() {
       const { access_token, refresh_token, user } = res.data;
       setAuth(user, access_token, refresh_token);
       toast.success('Welcome to Budget Buddy!');
-      navigate('/dashboard');
+      navigate('/add-expense');
     } catch (err: any) {
       toast.error(err.response?.data?.detail || 'Registration failed');
     } finally {

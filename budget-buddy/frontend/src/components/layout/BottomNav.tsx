@@ -14,7 +14,7 @@ export default function BottomNav() {
     <nav className="fixed bottom-0 w-full z-50 rounded-t-2xl border-t border-outline-variant/20 shadow-nav bg-surface/90 backdrop-blur-xl">
       <div className="flex justify-around items-center h-16 px-base max-w-lg mx-auto">
         {navItems.map(({ to, icon, label }) => {
-          const active = pathname.startsWith(to);
+          const active = pathname === to;
           return (
             <NavLink
               key={to}
