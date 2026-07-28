@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 import Layout from '../components/layout/Layout';
 import { expensesAPI } from '../api/services';
 import type { Expense } from '../types';
@@ -6,6 +7,7 @@ import { useAuthStore } from '../store/auth';
 import toast from 'react-hot-toast';
 
 export default function HistoryPage() {
+  const navigate = useNavigate();
   const { user } = useAuthStore();
   const [expenses, setExpenses] = useState<Expense[]>([]);
   const [loading, setLoading] = useState(true);
@@ -89,7 +91,7 @@ export default function HistoryPage() {
                   </div>
                 </div>
 
-                <div className="flex items-center gap-3">
+                <div className="flex items-center gap-2">
                   <div className="text-right">
                     <p className="font-bold text-monetary-md text-primary">₹{exp.amount.toLocaleString('en-IN')}</p>
                     <p className="text-[10px] text-on-surface-variant">
@@ -100,6 +102,16 @@ export default function HistoryPage() {
                       )}
                     </p>
                   </div>
+                  {/* Edit button — only the payer can edit */}
+                  {(exp.paid_by === 'you' || exp.paid_by === user?.id) && (
+                    <button
+                      onClick={() => navigate(`/edit-expense/${exp.id}`)}
+                      className="text-on-surface-variant/30 hover:text-primary hover:bg-primary/5 p-1.5 rounded-lg transition-colors md:opacity-0 group-hover:opacity-100"
+                      title="Edit Expense"
+                    >
+                      <span className="material-symbols-outlined text-[18px]">edit</span>
+                    </button>
+                  )}
                   <button
                     onClick={() => handleDeleteExpense(exp.id)}
                     className="text-on-surface-variant/30 hover:text-error hover:bg-error/5 p-1.5 rounded-lg transition-colors md:opacity-0 group-hover:opacity-100"

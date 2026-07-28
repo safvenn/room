@@ -76,5 +76,14 @@ class ExpenseListResponse(BaseModel):
     total: int
 
 
+class ExpenseUpdate(BaseModel):
+    title: Optional[str] = Field(None, min_length=1, max_length=200)
+    description: Optional[str] = Field(None, max_length=1000)
+    amount: Optional[float] = Field(None, gt=0)
+    payment_method: Optional[PAYMENT_METHODS] = None
+    category: Optional[CATEGORIES] = None
+    expense_date: Optional[date] = None
+
+
 class UpdateSplitStatus(BaseModel):
     status: SPLIT_STATUS

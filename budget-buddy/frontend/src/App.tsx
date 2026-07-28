@@ -10,6 +10,7 @@ import DashboardPage from './pages/DashboardPage';
 import FriendsPage from './pages/FriendsPage';
 import GroupsPage from './pages/GroupsPage';
 import AddExpensePage from './pages/AddExpensePage';
+import EditExpensePage from './pages/EditExpensePage';
 import HistoryPage from './pages/HistoryPage';
 import SettlementsPage from './pages/SettlementsPage';
 import BudgetPage from './pages/BudgetPage';
@@ -96,6 +97,14 @@ export default function App() {
             element={
               <ProtectedRoute>
                 <HistoryPage />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/edit-expense/:id"
+            element={
+              <ProtectedRoute>
+                <EditExpensePage />
               </ProtectedRoute>
             }
           />

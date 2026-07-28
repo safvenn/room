@@ -108,5 +108,14 @@ class ExpenseRepository:
         )
         return split
 
+    async def update(self, expense_id: str, updates: dict) -> Optional["Expense"]:
+        """Partially update an expense document and return the refreshed object."""
+        updates["updated_at"] = datetime.now(timezone.utc)
+        await self.collection.update_one(
+            {"_id": expense_id},
+            {"$set": updates}
+        )
+        return await self.get_by_id(expense_id)
+
     async def delete(self, expense: Expense) -> None:
         await self.collection.delete_one({"_id": expense.id})

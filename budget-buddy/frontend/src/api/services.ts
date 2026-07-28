@@ -1,6 +1,6 @@
 import api from './client';
 import type {
-  User, TokenResponse, Group, Expense, ExpenseCreate, ExpenseListResponse,
+  User, TokenResponse, Group, Expense, ExpenseCreate, ExpenseUpdate, ExpenseListResponse,
   Settlement, BalanceDetail, Budget, Notification, DashboardData, NotificationListResponse, GroupListResponse, FriendListResponse
 } from '../types';
 
@@ -50,6 +50,7 @@ export const expensesAPI = {
   list: (skip = 0, limit = 20) => api.get<ExpenseListResponse>(`/expenses/?skip=${skip}&limit=${limit}`),
   get: (id: string) => api.get<Expense>(`/expenses/${id}`),
   byGroup: (group_id: string) => api.get<ExpenseListResponse>(`/expenses/group/${group_id}`),
+  update: (id: string, data: ExpenseUpdate) => api.patch<Expense>(`/expenses/${id}`, data),
   delete: (id: string) => api.delete(`/expenses/${id}`),
   updateSplitStatus: (split_id: string, status: string) =>
     api.patch(`/expenses/splits/${split_id}/status`, { status }),

@@ -6,6 +6,7 @@ from app.api.expenses.schemas import (
     ExpenseListResponse,
     ExpensePublic,
     ExpenseSplitPublic,
+    ExpenseUpdate,
     UpdateSplitStatus,
 )
 from app.api.notifications.service import NotificationService
@@ -104,6 +105,35 @@ class ExpenseService:
             )
 
         return ExpenseSplitPublic.model_validate(updated)
+
+    async def update_expense(
+        self, current_user: User, expense_id: str, data: ExpenseUpdate
+    ) -> ExpensePublic:
+        expense = await self.repo.get_by_id(expense_id)
+        if not expense:
+            raise NotFoundException("Expense not found")
+        if expense.paid_by != current_user.id:
+            raise ForbiddenException("Only the payer can edit this expense")
+
+        # Build update dict with only provided fields
+        updates: dict = {}
+        if data.title is not None:
+            updates["title"] = data.title
+        if data.description is not None:
+            updates["description"] = data.description
+        if data.amount is not None:
+            updates["amount"] = float(data.amount)
+        if data.payment_method is not None:
+            updates["payment_method"] = data.payment_method
+        if data.category is not None:
+            updates["category"] = data.category
+        if data.expense_date is not None:
+            from datetime import datetime as _dt
+            updates["expense_date"] = _dt.combine(data.expense_date, _dt.min.time())
+
+        updated = await self.repo.update(expense_id, updates)
+        logger.info(f"Expense updated: {expense_id} by {current_user.email}")
+        return ExpensePublic.model_validate(updated)
 
     async def delete_expense(self, current_user: User, expense_id: str) -> None:
         expense = await self.repo.get_by_id(expense_id)

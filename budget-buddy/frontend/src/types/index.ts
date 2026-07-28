@@ -67,6 +67,15 @@ export interface ExpenseCreate {
   split_details?: SplitEntry[];
 }
 
+export interface ExpenseUpdate {
+  title?: string;
+  description?: string;
+  amount?: number;
+  payment_method?: PaymentMethod;
+  category?: Category;
+  expense_date?: string;
+}
+
 export interface ExpenseSplit {
   id: string;
   user_id: string;
